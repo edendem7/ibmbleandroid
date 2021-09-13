@@ -11,19 +11,17 @@ function startup() {
 	try {
 		window.bleui.Info("Starting up....");
 	} catch (ee) {
-		
+
 	}
 }
+
 function go() {
-    document.getElementById('arduino').class='notconnected';
+    document.getElementById('status').class='notconnected';
     window.bleui.interrogate();
-}
-function goopen() {
-    document.getElementById('arduino').class='notconnected';
-    window.bleui.toggleDoor();
+    window.bleui.configure();
 }
 function setClassOnArduino(c) {
-    document.getElementById('arduino').className = c;
+    document.getElementById('status').className = c;
 }
 function setActuating(c) {
     document.getElementById('toshiba').className = c;
@@ -36,30 +34,43 @@ function setStatus(s) {
 </script>
 <style>
 .notconnected {
-    border: 5px solid red;
+    padding: 10px;
+    border: 10px solid red;
 }
 .searching {
-    border: 5px dotted yellow;
+    padding: 10px;
+
+    border: 5px dotted #00BCD4;
 }
 .discovering {
-    border: 5px dashed green;
+    padding: 10px;
+
+    border: 5px dashed #00BCD4;
 }
 .communicating {
-    border: 5px solid green;
+    padding: 10px;
+
+    border: 5px solid #00BCD4;
 }
 </style>
-<body >
+<body style="background-color:#303030;">
 <center>
-    <h3>Expensive Garage Door Opener</h3>
-    <p>This demonstrates using an Arduino-powered BLE board</p>
-    <p id="status"></p>
-    <img id="arduino" style="width:35%;" src="arduino33.jpg"><br>
-    <p>energizing a small opto-isolated solid state relay (Toshiba TLP222A)</p>
-    <img id="toshiba" style="width:35%;" src="toshibarelay.jpg"><br>
-    <p>To actuate to a (slightly modified) commercial garage door opener</p>
-    <img id="liftmaster" style="width:35%;" src="garagedooropener.jpg"><br>
-    <button onclick="go();">Interrogate Device</button>
-    <button onclick="goopen();">Toggle the Door</button>
+
+    <button onclick="go();" , style ="background-color: #00BCD4; border: none;
+  color: white; width:180px; height:60px; gravity:center; padding: 20px 20px; text-align: center; text-decoration: none; display: inline-block; font-weight: bold;
+  font-size: 20px;" >  Connect  </button>
+    <h3 id="status", style="width:150px; color:white;" >Disconnected</h3>
+
+
 </center>
 </body>
 </html>
+
+
+
+
+
+
+
+
+

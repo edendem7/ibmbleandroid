@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">ble1</string>
+    <string-array name="configuration_options">
+        <item>No vibration</item>
+        <item>Soft vibration</item>
+        <item>Medium vibration</item>
+        <item>Strong vibration</item>
+        <item>Record Data</item>
+
+    </string-array>
 </resources>
