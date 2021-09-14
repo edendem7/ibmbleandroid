@@ -11,6 +11,7 @@ import android.bluetooth.BluetoothManager;
 import android.bluetooth.le.*;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.ParcelUuid;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
@@ -35,26 +36,23 @@ import java.util.UUID;
 
 
 public class MainActivity extends AppCompatActivity implements multipleChoiceDialogFragment.onMultiChoiceListener {
+    //-------------------------------------regarding debugging
     private final String tag = "ble1";
+
+    //------------------------------------regarding view
     private WebView browser = null;
     private Handler mHandler = null;
-    private int howmany = 0;
-    private BluetoothAdapter bluetoothAdapter;
-
     private TextView battery_view;
-    private final int NOTCONNECTED = 0;
-    private final int SEARCHING = 1;
-    private final int FOUND = 2;
-    private final int CONNECTED = 3;
-    private final int DISCOVERING = 4;
-    private final int COMMUNICATING = 5;
-    private final int CONFIGURE = 6;
-    private final int DISCONNECTING = 7;
-    private final int INTERROGATE = 8;
-    private final int READTEST = 9;
-    private Byte msg_value = 0x02;
     private String battery = "100";
-    //private ArrayList<Float> data = new ArrayList<Float>();
+    //-----------------------------------regarding communication
+    private final int NOTCONNECTED = 0, SEARCHING = 1, FOUND = 2, CONNECTED = 3, DISCOVERING = 4,
+            COMMUNICATING = 5 , CONFIGURE=6, DISCONNECTING=7 ,INTERROGATE=8, READTEST=9;
+    private BluetoothAdapter bluetoothAdapter;
+    private Byte msg_value = 0x02;//MSB is record mode and LSB is vibration strength
+    private ArrayList<Float> data = new ArrayList<Float>();
+    //-----------------------------------regarding preferences
+    private boolean first_time_login = true;
+    private boolean configured = false;
 
 
 
@@ -106,6 +104,7 @@ public class MainActivity extends AppCompatActivity implements multipleChoiceDia
             }
         };
 
+        SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
 
         browser = (WebView) this.findViewById(R.id.browser);
         browser.setOnClickListener(new View.OnClickListener() {
@@ -114,33 +113,22 @@ public class MainActivity extends AppCompatActivity implements multipleChoiceDia
 
             }
         });
-
         // set a webview client to override the default functionality
         browser.setWebViewClient(new wvClient());
-
         // get settings so we can config our WebView instance
         WebSettings settings = browser.getSettings();
-
-        // JavaScript?  Of course!
         settings.setJavaScriptEnabled(true);
-
-        // clear cache
-        browser.clearCache(true);
-
+        browser.clearCache(true); // clear cache
         // this is necessary for "alert()" to work
         browser.setWebChromeClient(new WebChromeClient());
-
         // add our custom functionality to the javascript environment
         browser.addJavascriptInterface(new BLEUIHandler(), "bleui");
-
         // load a page to get things started
         browser.loadUrl("file:///android_asset/index.html");
 
-        // Initializes Bluetooth adapter.
         final BluetoothManager bluetoothManager =
                 (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
-        bluetoothAdapter = bluetoothManager.getAdapter();
-
+        bluetoothAdapter = bluetoothManager.getAdapter(); // Initializes Bluetooth adapter.
 
         final Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
@@ -160,7 +148,6 @@ public class MainActivity extends AppCompatActivity implements multipleChoiceDia
                 Log.i(tag, "record+vibration:"+msg_value);
             }
         }, 5000);
-
 
         // Ensures Bluetooth is available on the device and it is enabled. If not,
         // displays a dialog requesting user permission to enable Bluetooth.
@@ -403,25 +390,25 @@ public class MainActivity extends AppCompatActivity implements multipleChoiceDia
                 battery_view.setText("Battery: "+String.valueOf(bat)+"%");
                 doNextThing(gatt);
             }
-//            if(characteristic.getUuid().equals(dataUUID)) { //read the data
-//                Log.i(tag, "characteristic read [" + characteristic.getUuid() + "] [" + characteristic.getStringValue(0) + "]");
-//                String s = "";
-//                for(int j = 0; j<16; j++) {
-//                    for (int i = 0; i < 4; i++) {
-//                        s += characteristic.getValue()[i + j * 16];
-//                    }
-//                    Float ang_vel = new Float(Float.parseFloat(s));
-//                    s="";
-//                    data.add(ang_vel);
-//                    for (int i = 4; i < 8; i++) {
-//                        s += characteristic.getValue()[i+j*16];
-//                    }
-//                    Float time = new Float(new Float(Float.parseFloat(s)));
-//                    s="";
-//                    data.add(time);
-//                }
-//                Log.i(tag, data.toString());
-//            }
+            if(characteristic.getUuid().equals(dataUUID)) { //read the data
+                Log.i(tag, "characteristic read [" + characteristic.getUuid() + "] [" + characteristic.getStringValue(0) + "]");
+                String s = "";
+                for(int j = 0; j<16; j++) {
+                    for (int i = 0; i < 4; i++) {
+                        s += characteristic.getValue()[i + j * 16];
+                    }
+                    Float ang_vel = new Float(Float.parseFloat(s));
+                    s="";
+                    data.add(ang_vel);
+                    for (int i = 4; i < 8; i++) {
+                        s += characteristic.getValue()[i+j*16];
+                    }
+                    Float time = new Float(new Float(Float.parseFloat(s)));
+                    s="";
+                    data.add(time);
+                }
+                Log.i(tag, data.toString());
+            }
 
         }
 
