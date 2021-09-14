@@ -11,6 +11,7 @@ public class BLEQueueItem {
     public static final int WRITECHARACTERISTIC = 0x02;
     public static final int READDESCRIPTOR = 0x03;
     public static final int DISCONNECT = 0x04;
+    public static final int RECORDING = 0x05;
 
 
 
