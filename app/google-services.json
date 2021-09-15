@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "1096484827003",
+    "project_id": "wegait-fefa4",
+    "storage_bucket": "wegait-fefa4.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1096484827003:android:8661aa77b11ac547b517de",
+        "android_client_info": {
+          "package_name": "com.navitend.ble1"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1096484827003-qbilhcsobn5ipjp1fhbph9qrspgfepej.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDYLp_NIWP9z0JNWGT8e9QdD3Jvx9tV_FM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1096484827003-qbilhcsobn5ipjp1fhbph9qrspgfepej.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

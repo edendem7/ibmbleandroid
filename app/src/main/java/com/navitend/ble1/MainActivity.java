@@ -13,8 +13,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.ParcelUuid;
-import android.support.v4.app.DialogFragment;
-import android.support.v7.app.AppCompatActivity;
+import android.app.DialogFragment;
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -45,6 +45,7 @@ public class MainActivity extends AppCompatActivity implements multipleChoiceDia
     private Handler mHandler = null;
     private TextView battery_view;
     private String battery = "100";
+
     //-----------------------------------regarding communication
     private final int NOTCONNECTED = 0, SEARCHING = 1, FOUND = 2, CONNECTED = 3, DISCOVERING = 4,
             COMMUNICATING = 5, CONFIGURE = 6, DISCONNECTING = 7, INTERROGATE = 8, RECORDING = 9;
@@ -68,6 +69,9 @@ public class MainActivity extends AppCompatActivity implements multipleChoiceDia
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         battery_view = findViewById(R.id.battery);
+        Intent login_intent = getIntent();
+        Log.i(tag, "email: "+ login_intent.getStringExtra("email")+" password: "+
+                login_intent.getStringExtra("password"));
         mHandler = new Handler() {
             public void handleMessage(Message inputMessage) {
                 switch (inputMessage.what) {
@@ -139,10 +143,10 @@ public class MainActivity extends AppCompatActivity implements multipleChoiceDia
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                DialogFragment multipleChoiceDialog = new multipleChoiceDialogFragment();
-                multipleChoiceDialog.setCancelable(false);
-
-                multipleChoiceDialog.show(getSupportFragmentManager(), "MultiChoice Dialog");
+//                DialogFragment multipleChoiceDialog = new multipleChoiceDialogFragment();
+//                multipleChoiceDialog.setCancelable(false);
+//
+//                multipleChoiceDialog.show("MultiChoice Dialog");
 
             }
         }, 1000);//time to wait before the pop up is coming

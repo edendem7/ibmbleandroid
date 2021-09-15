@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background"
+    tools:context=".Register">
+
+    <EditText
+        android:id="@+id/name_reg_et"
+        android:layout_width="wrap_content"
+
+        android:layout_height="wrap_content"
+        android:layout_marginStart="40dp"
+        android:layout_marginBottom="268dp"
+        android:text="name"
+        android:textColor="@color/text"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"></EditText>
+
+    <EditText
+        android:id="@+id/email_reg_et"
+        android:layout_width="wrap_content"
+
+        android:layout_height="wrap_content"
+        android:layout_marginStart="40dp"
+        android:layout_marginBottom="210dp"
+        android:text="Email"
+        android:textColor="@color/text"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"></EditText>
+
+    <EditText
+        android:id="@+id/password_reg_et"
+        android:layout_width="wrap_content"
+
+
+        android:layout_height="wrap_content"
+        android:layout_marginTop="11dp"
+        android:text="Password"
+        android:textColor="@color/text"
+        app:layout_constraintStart_toStartOf="@+id/email_reg_et"
+        app:layout_constraintTop_toBottomOf="@+id/email_reg_et"></EditText>
+
+    <Button
+        android:id="@+id/register_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="33dp"
+        android:layout_marginTop="17dp"
+        android:background="@color/button"
+        android:text="Register"
+        android:textColor="@color/text"
+        app:layout_constraintStart_toEndOf="@+id/password_reg_et"
+        app:layout_constraintTop_toBottomOf="@+id/password_reg_et" />
+
+    <ProgressBar
+        android:id="@+id/progress_bar_reg"
+        style="?progressBarStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:visibility="gone"
+        android:layout_marginBottom="29dp"
+        app:layout_constraintBottom_toTopOf="@+id/name_reg_et"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:ignore="MissingConstraints"></ProgressBar>
+
+    <TextView
+        android:id="@+id/home_reg_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="25dp"
+        android:text="home"
+        android:textColor="@color/text"
+        app:layout_constraintEnd_toEndOf="@+id/register_btn"
+        app:layout_constraintTop_toBottomOf="@+id/register_btn" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
