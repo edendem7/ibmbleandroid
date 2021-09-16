@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">ble1</string>
+    <string name="app_name">MyGate</string>
     <string-array name="configuration_options">
         <item>No vibration</item>
         <item>Soft vibration</item>

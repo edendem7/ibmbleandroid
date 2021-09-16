@@ -1,75 +1,102 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_gravity="center"
     android:background="@color/background"
+    android:orientation="vertical"
     tools:context=".LoginActivity">
 
 
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginHorizontal="50dp"
+        android:layout_marginVertical="50dp"
+        android:layout_weight="1"
+        android:src="@drawable/mygatetilted"></ImageView>
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:orientation="vertical">
 
-    <EditText
-        android:id="@+id/email_et"
-        android:layout_width="wrap_content"
+        <ProgressBar
+            android:id="@+id/progress_bar"
+            style="?progressBarStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginVertical="10dp"
+            android:visibility="gone"
 
-        android:layout_height="wrap_content"
-        android:layout_marginStart="40dp"
-        android:layout_marginBottom="210dp"
-        android:text="Email"
-        android:textColor="@color/text"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"></EditText>
+            ></ProgressBar>
 
-    <EditText
-        android:id="@+id/password_et"
-        android:layout_width="wrap_content"
+        <EditText
+            android:id="@+id/email_et"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="40dp"
+            android:layout_weight="0"
+            android:backgroundTint="@color/button"
+            android:hint="Email"
+            android:textColor="@color/text"
+            android:textColorHint="@color/textHint"
+            android:textSize="30dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"></EditText>
 
+        <EditText
+            android:id="@+id/password_et"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="40dp"
+            android:layout_marginVertical="10dp"
+            android:layout_weight="0"
+            android:backgroundTint="@color/button"
+            android:hint="Password"
+            android:textColor="@color/text"
+            android:textColorHint="@color/textHint"
+            android:textSize="30dp"
 
-        android:layout_height="wrap_content"
-        android:layout_marginTop="11dp"
-        android:text="Password"
-        android:textColor="@color/text"
-        app:layout_constraintStart_toStartOf="@+id/email_et"
-        app:layout_constraintTop_toBottomOf="@+id/email_et"></EditText>
+            app:layout_constraintStart_toStartOf="@+id/email_et"
+            app:layout_constraintTop_toBottomOf="@+id/email_et"></EditText>
 
-    <Button
-        android:id="@+id/login_btn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="33dp"
-        android:layout_marginTop="17dp"
-        android:text="Login"
-        android:textColor="@color/text"
-        android:background="@color/button"
-        app:layout_constraintStart_toEndOf="@+id/password_et"
-        app:layout_constraintTop_toBottomOf="@+id/password_et" />
-
-
-    <TextView
-        android:id="@+id/register_tv"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="52dp"
-        android:layout_marginTop="84dp"
-        android:text="register"
-        android:textColor="@color/text"
-        app:layout_constraintStart_toEndOf="@+id/password_et"
-        app:layout_constraintTop_toBottomOf="@+id/password_et" />
-
-    <ProgressBar
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/progress_bar"
-        style="?progressBarStyle"
-        android:layout_centerInParent = "true"
-        tools:ignore="MissingConstraints"
-        app:layout_constraintBottom_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        ></ProgressBar>
+        <Button
+            android:id="@+id/login_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginHorizontal="70dp"
+            android:layout_weight="0"
+            android:background="@color/button"
+            android:text="Login"
+            android:layout_marginTop="10dp"
+            android:textColor="@color/text"
+            android:textSize="30dp"
+            app:layout_constraintStart_toStartOf="@+id/password_et"
+            app:layout_constraintTop_toBottomOf="@+id/password_et" />
 
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <TextView
+            android:id="@+id/register_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="50dp"
+            android:layout_gravity="center"
+            android:layout_marginHorizontal="50dp"
+            android:layout_marginVertical="20dp"
+            android:layout_marginTop="10dp"
+            android:layout_weight="0"
+            android:text="register"
+            android:textColor="@color/text"
+            android:textSize="20dp"
+            app:layout_constraintStart_toEndOf="@+id/login_btn"
+            app:layout_constraintTop_toBottomOf="@+id/login_btn" />
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
+
+
+
+</androidx.appcompat.widget.LinearLayoutCompat>

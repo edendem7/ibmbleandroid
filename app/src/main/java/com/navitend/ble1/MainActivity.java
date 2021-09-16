@@ -38,7 +38,7 @@ import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity implements multipleChoiceDialogFragment.onMultiChoiceListener {
     //-------------------------------------regarding debugging
-    private final String tag = "ble1";
+    private final String tag = "We said that: ";
 
     //------------------------------------regarding view
     private WebView browser = null;
