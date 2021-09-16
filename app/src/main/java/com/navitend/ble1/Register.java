@@ -6,8 +6,11 @@ import android.os.Bundle;
 import android.util.Log;
 import android.util.Patterns;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -22,6 +25,8 @@ import com.google.firebase.database.FirebaseDatabase;
 
 
 public class Register extends AppCompatActivity implements View.OnClickListener {
+    private Animation rotate_animation;
+    private ImageView logo_iv;
     private final String tag = "ble1";
     private FirebaseAuth mAuth;
     private Button register_btn;
@@ -30,6 +35,8 @@ public class Register extends AppCompatActivity implements View.OnClickListener 
     private EditText password_et;
     private ProgressBar progress_bar;
     private TextView home_tv;
+
+
 
 
     @Override
@@ -48,6 +55,9 @@ public class Register extends AppCompatActivity implements View.OnClickListener 
         progress_bar = findViewById(R.id.progress_bar_reg);
         home_tv = findViewById(R.id.home_reg_tv);
         home_tv.setOnClickListener(this);
+        logo_iv = findViewById(R.id.logo_iv_reg);
+        logo_iv.setOnClickListener(this);
+        rotateAnimation();
 
 
     }
@@ -124,6 +134,12 @@ public class Register extends AppCompatActivity implements View.OnClickListener 
 
     }
 
+    private void rotateAnimation(){
+
+        rotate_animation = AnimationUtils.loadAnimation(this,R.anim.rotate);
+        logo_iv.startAnimation(rotate_animation);
+    }
+
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
@@ -133,6 +149,9 @@ public class Register extends AppCompatActivity implements View.OnClickListener 
                 break;
             case R.id.home_reg_tv:
                 switchToLoginActivity();
+                break;
+            case R.id.logo_iv_reg:
+                rotateAnimation();
                 break;
         }
 
