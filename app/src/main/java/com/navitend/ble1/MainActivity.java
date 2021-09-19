@@ -1,5 +1,6 @@
 package com.navitend.ble1;
 
+import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
@@ -12,6 +13,7 @@ import android.bluetooth.le.*;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Looper;
 import android.os.ParcelUuid;
 import android.app.DialogFragment;
 import androidx.appcompat.app.AppCompatActivity;
@@ -26,6 +28,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebChromeClient;
 import android.webkit.WebViewClient;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -59,6 +62,8 @@ public class MainActivity extends AppCompatActivity implements multipleChoiceDia
     private boolean record = false;
     private boolean read1 = false, read2 = false, read3 = false, read4 = false, read5 = false, read6 = false, read7 = false, read8 = false;
 
+    private final int REQUEST_LOCATION_PERMISSION = 1;
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -69,10 +74,11 @@ public class MainActivity extends AppCompatActivity implements multipleChoiceDia
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         battery_view = findViewById(R.id.battery);
+        requestLocationPermission();
         Intent login_intent = getIntent();
         Log.i(tag, "email: "+ login_intent.getStringExtra("email")+" password: "+
                 login_intent.getStringExtra("password"));
-        mHandler = new Handler() {
+        mHandler = new Handler(Looper.getMainLooper()) {
             public void handleMessage(Message inputMessage) {
                 switch (inputMessage.what) {
                     case NOTCONNECTED:
@@ -165,6 +171,7 @@ public class MainActivity extends AppCompatActivity implements multipleChoiceDia
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableBtIntent, 1);
         }
+
 
     }
 
@@ -632,4 +639,25 @@ public class MainActivity extends AppCompatActivity implements multipleChoiceDia
             }
         }
     }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        // Forward results to EasyPermissions
+        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
+    }
+
+    @AfterPermissionGranted(REQUEST_LOCATION_PERMISSION)
+    public void requestLocationPermission() {
+        String[] perms = {Manifest.permission.ACCESS_FINE_LOCATION};
+        if(EasyPermissions.hasPermissions(this, perms)) {
+            Toast t = Toast.makeText(this, "Permission already granted", Toast.LENGTH_SHORT);
+            t.show();
+        }
+        else {
+            EasyPermissions.requestPermissions(this, "Please grant the location permission", REQUEST_LOCATION_PERMISSION, perms);
+        }
+    }
 }
+
