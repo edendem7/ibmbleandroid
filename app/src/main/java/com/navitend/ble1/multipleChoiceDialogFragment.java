@@ -30,7 +30,7 @@ public Dialog onCreateDialog(Bundle savedInstanceState)
     final ArrayList<String> selectedItemList = new ArrayList<String>();
     AlertDialog.Builder builder=new AlertDialog.Builder(getActivity());
 
-    final String[] list=getActivity().getResources().getStringArray(R.array.configuration_options);
+    final String[] list=getActivity().getResources().getStringArray(R.array.vibration_modes);
 
     builder.setTitle("Select Your Choice").setMultiChoiceItems(list, null, new DialogInterface.OnMultiChoiceClickListener() {
 

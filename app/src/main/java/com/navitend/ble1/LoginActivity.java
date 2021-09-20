@@ -1,11 +1,13 @@
 package com.navitend.ble1;
 
+import android.Manifest;
 import android.content.Intent;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
@@ -22,6 +24,9 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 
+import pub.devrel.easypermissions.AfterPermissionGranted;
+import pub.devrel.easypermissions.EasyPermissions;
+
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener {
     private final String tag = "We said that: ";
     Animation rotate_animation;
@@ -31,12 +36,16 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private EditText email_et;
     private EditText password_et;
     private ProgressBar progress_bar;
-
-    private FirebaseAuth mAuth;
+    public static FirebaseAuth mAuth;
+    private final int REQUEST_LOCATION_PERMISSION = 1;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder()
+                .detectLeakedClosableObjects()
+                .penaltyLog()
+                .build());
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         login_btn = findViewById(R.id.login_btn);
@@ -50,14 +59,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         register_tv = findViewById(R.id.register_tv);
         register_tv.setOnClickListener(this);
         mAuth = FirebaseAuth.getInstance();
-
-    }
-
-    private void switchToMainActivity(String email, String password) {
-        Intent switchActivityIntent = new Intent(this, MainActivity.class);
-        switchActivityIntent.putExtra("email", email);
-        switchActivityIntent.putExtra("password", password);
-        startActivity(switchActivityIntent);
+        requestLocationPermission();
 
     }
 
@@ -118,6 +120,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if (task.isSuccessful()) {
                     switchToMainActivity();
+                    switchToMainActivity();
                 } else {
                     Toast t  = Toast.makeText(LoginActivity.this, "Failed to login: " + task.getException().getMessage(),  Toast.LENGTH_LONG);
                 }
@@ -129,5 +132,26 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         //need to do saving
         Intent switchActivityIntent = new Intent(this, MainActivity.class);
         startActivity(switchActivityIntent);
+    }
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        // Forward results to EasyPermissions
+        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
+    }
+
+    @AfterPermissionGranted(REQUEST_LOCATION_PERMISSION)
+    public void requestLocationPermission() {
+        String[] perms = {Manifest.permission.ACCESS_FINE_LOCATION};
+        if(EasyPermissions.hasPermissions(this, perms)) {
+            Toast t = Toast.makeText(this, "Location permission already granted", Toast.LENGTH_SHORT);
+            t.show();
+        }
+        else {
+            EasyPermissions.requestPermissions(this, "Please grant the location permission", REQUEST_LOCATION_PERMISSION, perms);
+        }
     }
 }

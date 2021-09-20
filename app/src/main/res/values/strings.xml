@@ -1,11 +1,10 @@
 <resources>
     <string name="app_name">MyGait</string>
-    <string-array name="configuration_options">
+    <string-array name="vibration_modes">
         <item>No vibration</item>
         <item>Soft vibration</item>
         <item>Medium vibration</item>
         <item>Strong vibration</item>
-        <item>Record Data</item>
 
     </string-array>
 </resources>

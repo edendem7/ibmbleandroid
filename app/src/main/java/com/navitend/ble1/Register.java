@@ -98,11 +98,8 @@ public class Register extends AppCompatActivity implements View.OnClickListener 
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if (task.isSuccessful()) {
                     final User user = new User(name, email);
-
-
-                    FirebaseDatabase.getInstance().getReference("Users").child(FirebaseAuth.getInstance().getUid())
-                            .setValue(user);
-                    switchToMainActivity();
+                    FirebaseDatabase.getInstance().getReference().child("Users").push().setValue(user);
+                    switchToMainActivity(email);
 
                 } else {
                     Toast t = Toast.makeText(Register.this, "Registration Failed: " + task.getException().getMessage(), Toast.LENGTH_LONG);
@@ -128,9 +125,10 @@ public class Register extends AppCompatActivity implements View.OnClickListener 
         startActivity(switchActivityIntent);
     }
 
-    private void switchToMainActivity() {
+    private void switchToMainActivity(String email) {
         //need to do saving
         Intent switchActivityIntent = new Intent(this, MainActivity.class);
+        switchActivityIntent.putExtra("email", email);
         startActivity(switchActivityIntent);
     }
 

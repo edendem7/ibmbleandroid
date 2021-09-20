@@ -16,17 +16,34 @@ import android.content.SharedPreferences;
 import android.os.Looper;
 import android.os.ParcelUuid;
 import android.app.DialogFragment;
+
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 import android.webkit.WebSettings;
 import android.webkit.WebChromeClient;
 import android.webkit.WebViewClient;
+import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.ImageView;
+import android.widget.NumberPicker;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -38,31 +55,43 @@ import java.util.Queue;
 import java.util.List;
 import java.util.UUID;
 
+import pub.devrel.easypermissions.AfterPermissionGranted;
+import pub.devrel.easypermissions.EasyPermissions;
 
-public class MainActivity extends AppCompatActivity implements multipleChoiceDialogFragment.onMultiChoiceListener {
+
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+
     //-------------------------------------regarding debugging
+
     private final String tag = "We said that: ";
 
     //------------------------------------regarding view
+
     private WebView browser = null;
     private Handler mHandler = null;
     private TextView battery_view;
+    private CheckBox test_cb;
+    private TextView status_view;
+    private ImageView logo;
     private String battery = "100";
+    private FirebaseUser current_user = null;
+    private NumberPicker vibration_picker;
+    Animation rotate_animation;
 
     //-----------------------------------regarding communication
+
     private final int NOTCONNECTED = 0, SEARCHING = 1, FOUND = 2, CONNECTED = 3, DISCOVERING = 4,
             COMMUNICATING = 5, CONFIGURE = 6, DISCONNECTING = 7, INTERROGATE = 8, RECORDING = 9;
     private BluetoothAdapter bluetoothAdapter;
-    private Byte msg_value = 0x02;//MSB is record mode and LSB is vibration strength
+    private Byte msg_value = 0x13;//MSB is record mode and LSB is vibration strength
     private ArrayList<Float> data_y = new ArrayList<Float>();
     private ArrayList<Integer> data_x = new ArrayList<Integer>();
-    //-----------------------------------regarding preferences
-    private boolean first_time_login = true;
-    private boolean configured = false;
-    private boolean record = false;
     private boolean read1 = false, read2 = false, read3 = false, read4 = false, read5 = false, read6 = false, read7 = false, read8 = false;
 
-    private final int REQUEST_LOCATION_PERMISSION = 1;
+    //-----------------------------------regarding preferences
+
+    private boolean record = false;
+    String[] vibration_modes;
 
     @Override
     protected void onDestroy() {
@@ -71,13 +100,55 @@ public class MainActivity extends AppCompatActivity implements multipleChoiceDia
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        //create view and connect between xml to java
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         battery_view = findViewById(R.id.battery);
-        requestLocationPermission();
-        Intent login_intent = getIntent();
-        Log.i(tag, "email: "+ login_intent.getStringExtra("email")+" password: "+
-                login_intent.getStringExtra("password"));
+        logo = findViewById(R.id.logo_iv_main);
+        logo.setOnClickListener(this);
+        status_view = findViewById(R.id.status_main);
+        test_cb = findViewById(R.id.test_cb);
+        test_cb.setOnClickListener(MainActivity.this);
+        vibration_modes = getResources().getStringArray(R.array.vibration_modes);
+        vibration_picker = findViewById(R.id.vibration_picker);
+        vibration_picker.setDisplayedValues(vibration_modes);
+        vibration_picker.setMaxValue(3);
+        vibration_picker.setMinValue(0);
+        vibration_picker.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
+            @Override
+            public void onValueChange(NumberPicker numberPicker, int oldVal, int newVal) {
+
+            }
+        });
+        rotateAnimation();
+
+        //get data from login activity
+        Intent intent = getIntent();
+        final String curr_email = intent.getStringExtra("email");
+//        current_user = LoginActivity.mAuth.getCurrentUser();
+//        DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference().child("Users");
+//        rootRef.addValueEventListener(new ValueEventListener() {
+//            @Override
+//            public void onDataChange(@NonNull DataSnapshot Snapshot) {
+//                for (DataSnapshot snapshot:Snapshot.getChildren()){
+//                    if(snapshot.getValue(User.class).email.equals(curr_email)){
+//                        User user = snapshot.getValue(User.class);
+//                        Toast t = Toast.makeText(MainActivity.this, "user isssss:" + user.name, Toast.LENGTH_LONG);
+//                        t.show();
+//                        Log.i(tag, "user issss:" + user.name);
+//                    }
+//                }
+//
+//            }
+
+//            @Override
+//            public void onCancelled(@NonNull DatabaseError error) {
+//
+//            }
+//        });
+        //uidRef.addListenerForSingleValueEvent(valueEventListener);
+
+        //responsible for updating the webview (status view)
         mHandler = new Handler(Looper.getMainLooper()) {
             public void handleMessage(Message inputMessage) {
                 switch (inputMessage.what) {
@@ -119,8 +190,6 @@ public class MainActivity extends AppCompatActivity implements multipleChoiceDia
             }
         };
 
-        SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
-
         browser = (WebView) this.findViewById(R.id.browser);
         browser.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -132,37 +201,19 @@ public class MainActivity extends AppCompatActivity implements multipleChoiceDia
         browser.setWebViewClient(new wvClient());
         // get settings so we can config our WebView instance
         WebSettings settings = browser.getSettings();
+        // clear cache
         settings.setJavaScriptEnabled(true);
-        browser.clearCache(true); // clear cache
+        browser.clearCache(true);
         // this is necessary for "alert()" to work
         browser.setWebChromeClient(new WebChromeClient());
         // add our custom functionality to the javascript environment
         browser.addJavascriptInterface(new BLEUIHandler(), "bleui");
         // load a page to get things started
         browser.loadUrl("file:///android_asset/index.html");
-
+        // Initializes Bluetooth adapter.
         final BluetoothManager bluetoothManager =
                 (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
-        bluetoothAdapter = bluetoothManager.getAdapter(); // Initializes Bluetooth adapter.
-
-        final Handler handler = new Handler();
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-//                DialogFragment multipleChoiceDialog = new multipleChoiceDialogFragment();
-//                multipleChoiceDialog.setCancelable(false);
-//
-//                multipleChoiceDialog.show("MultiChoice Dialog");
-
-            }
-        }, 1000);//time to wait before the pop up is coming
-        final Handler handler1 = new Handler();
-        handler1.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                Log.i(tag, "record+vibration:" + msg_value);
-            }
-        }, 5000);
+        bluetoothAdapter = bluetoothManager.getAdapter();
 
         // Ensures Bluetooth is available on the device and it is enabled. If not,
         // displays a dialog requesting user permission to enable Bluetooth.
@@ -171,44 +222,51 @@ public class MainActivity extends AppCompatActivity implements multipleChoiceDia
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableBtIntent, 1);
         }
-
-
     }
 
-    @Override
-    public void onPositiveButtonClicked(String[] list, ArrayList<String> selectedItemList) {
 
-
-        if (selectedItemList.contains("Record Data")) {
+    public void chooseMode() {
+        int vibration_level = vibration_picker.getValue();
+        if (test_cb.isChecked())
+        {
             record = true;
-            if (selectedItemList.contains("No vibration")) {
+            if (vibration_level == 0) {
                 msg_value = 0x10;
-            } else if (selectedItemList.contains("Soft vibration"))
+            } else if (vibration_level == 1)
                 msg_value = 0x11;
-            else if (selectedItemList.contains("Medium vibration"))
+            else if (vibration_level == 2)
                 msg_value = 0x12;
-            else if (selectedItemList.contains("Strong vibration"))
+            else if (vibration_level == 3)
                 msg_value = 0x13;
         } else {
             record = false;
-            if (selectedItemList.contains("No vibration")) {
+            if (vibration_level == 0) {
                 msg_value = 0x00;
-            } else if (selectedItemList.contains("Soft vibration"))
+            } else if (vibration_level == 1)
                 msg_value = 0x01;
-            else if (selectedItemList.contains("Medium vibration"))
+            else if (vibration_level == 2)
                 msg_value = 0x02;
-            else if (selectedItemList.contains("Strong vibration"))
+            else if (vibration_level == 3)
                 msg_value = 0x03;
         }
+        Toast t = Toast.makeText(this, "record : "+ record+ " vibration mode: "+ vibration_level, Toast.LENGTH_LONG);
+        t.show();
+    }
 
+
+    public void onClick(View v) {
+
+        switch (v.getId()) {
+            case R.id.logo_iv_main:
+                rotateAnimation();
+                break;
+
+
+        }
 
     }
 
-    @Override
-    public void onNegativeButtonClicked() {
-
-    }
-
+    public  void testBtnPressed(){}
 
     final class wvClient extends WebViewClient {
         public void onPageFinished(WebView view, String url) {
@@ -240,9 +298,12 @@ public class MainActivity extends AppCompatActivity implements multipleChoiceDia
 
     final class BLERemoteDevice extends BluetoothGattCallback {
         private final String tag = "BLEDEVICE";
+        // used for communication setup
         UUID serviceWeWant = new UUID(0x0000FA0100001000L, 0x800000805f9b34fbL);
         UUID batteryUUID = new UUID(0x0000210100001000L, 0x800000805f9b34fbL);
+        // if we want to record the data collected or not
         UUID testUUID = new UUID(0x0000210200001000L, 0x800000805f9b34fbL);
+        // we send the data in 8 groups in order to avoid overriding information
         UUID data1UUID = new UUID(0x0000310100001000L, 0x800000805f9b34fbL);
         UUID data2UUID = new UUID(0x0000310200001000L, 0x800000805f9b34fbL);
         UUID data3UUID = new UUID(0x0000310300001000L, 0x800000805f9b34fbL);
@@ -251,17 +312,15 @@ public class MainActivity extends AppCompatActivity implements multipleChoiceDia
         UUID data6UUID = new UUID(0x0000310600001000L, 0x800000805f9b34fbL);
         UUID data7UUID = new UUID(0x0000310700001000L, 0x800000805f9b34fbL);
         UUID data8UUID = new UUID(0x0000310800001000L, 0x800000805f9b34fbL);
-
-
+        // we send message of record mode and vibration mode
         byte msgValue[] = {msg_value};
-
+        // creates a queue of tasks to communicate
         Queue<BLEQueueItem> taskQ = new LinkedList<BLEQueueItem>();
         private int mode = INTERROGATE;
-
         BLERemoteDevice(int mode) {
             this.mode = mode;
         }
-
+        // call this function until queue is empty
         private void doNextThing(BluetoothGatt gatt) {
             Log.i(tag, "doNextThing");
             try {
@@ -284,13 +343,11 @@ public class MainActivity extends AppCompatActivity implements multipleChoiceDia
                             gatt.readDescriptor((BluetoothGattDescriptor) thisTask.getObject());
                             break;
                         case BLEQueueItem.DISCONNECT:
-                            Log.i(tag, "data_y   :" + data_y.toString());
-                            Log.i(tag, "data_x   :" + data_x.toString());
                             mHandler.sendEmptyMessage(DISCONNECTING);
                             gatt.disconnect();
                             break;
                         case BLEQueueItem.RECORDING:
-                            Thread.sleep(5000);
+                            Thread.sleep(5000); // wait for the data to be ready
                             gatt.readCharacteristic((BluetoothGattCharacteristic) thisTask.getObject());
                             break;
                     }
@@ -354,6 +411,7 @@ public class MainActivity extends AppCompatActivity implements multipleChoiceDia
             }
 
             if (mode == CONFIGURE) {
+                chooseMode();
                 BluetoothGattService ourBLEService = gatt.getService(serviceWeWant);
                 if (ourBLEService != null) {
                     Log.i(tag, "Got it, woo hoo!!!");
@@ -421,10 +479,20 @@ public class MainActivity extends AppCompatActivity implements multipleChoiceDia
         public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
 
             if (characteristic.getUuid().equals(batteryUUID)) {
-                Log.i(tag, "characteristic read [" + characteristic.getUuid() + "] [" + characteristic.getStringValue(0) + "]");
-                int bat = characteristic.getValue()[0];
-                Log.i(tag, "batty read " + characteristic.getValue().length + "value is" + bat);
-                battery_view.setText("Battery: " + String.valueOf(bat) + "%");
+                if (characteristic.getValue() != null) {
+                    Log.i(tag, "characteristic read [" + characteristic.getUuid() + "] [" + characteristic.getStringValue(0) + "]");
+                    final int bat = characteristic.getValue()[0];
+                    Log.i(tag, "batty read " + characteristic.getValue().length + "value is" + bat);
+                    runOnUiThread(new Runnable() {
+
+                        @Override
+                        public void run() {
+
+                            battery_view.setText("Battery: " + String.valueOf(bat) + "%");
+
+                        }
+                    });
+                }
 
             }
             if (characteristic.getUuid().equals(data1UUID) && !read1) { //read the data
@@ -551,8 +619,11 @@ public class MainActivity extends AppCompatActivity implements multipleChoiceDia
                 }
                 read8 = true;
                 BluetoothGattService ourBLEService = gatt.getService(serviceWeWant);
+                Log.i(tag, "data_y   :" + data_y.toString());
+                Log.i(tag, "data_x   :" + data_x.toString());
                 mHandler.sendEmptyMessage(DISCONNECTING);
-                taskQ.add(new BLEQueueItem(BLEQueueItem.DISCONNECT, new UUID(0, 0), "Disconnect", null));
+                gatt.disconnect();
+
 
             }
 
@@ -640,24 +711,11 @@ public class MainActivity extends AppCompatActivity implements multipleChoiceDia
         }
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        // Forward results to EasyPermissions
-        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
+    // add spin animation of the logo
+    private void rotateAnimation() {
+        rotate_animation = AnimationUtils.loadAnimation(this, R.anim.rotate);
+        logo.startAnimation(rotate_animation);
     }
 
-    @AfterPermissionGranted(REQUEST_LOCATION_PERMISSION)
-    public void requestLocationPermission() {
-        String[] perms = {Manifest.permission.ACCESS_FINE_LOCATION};
-        if(EasyPermissions.hasPermissions(this, perms)) {
-            Toast t = Toast.makeText(this, "Permission already granted", Toast.LENGTH_SHORT);
-            t.show();
-        }
-        else {
-            EasyPermissions.requestPermissions(this, "Please grant the location permission", REQUEST_LOCATION_PERMISSION, perms);
-        }
-    }
 }
 
