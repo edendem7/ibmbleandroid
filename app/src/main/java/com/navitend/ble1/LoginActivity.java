@@ -129,8 +129,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
     }
     private void switchToMainActivity() {
-        //need to do saving
         Intent switchActivityIntent = new Intent(this, MainActivity.class);
+        switchActivityIntent.putExtra("email", email_et.getText().toString());
         startActivity(switchActivityIntent);
     }
 

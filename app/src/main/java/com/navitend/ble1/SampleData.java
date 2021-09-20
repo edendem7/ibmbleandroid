@@ -10,4 +10,8 @@ public class SampleData {
         this.data_y = new ArrayList<Float>();
         this.data_x = new ArrayList<Integer>();
     }
+    public SampleData(ArrayList<Float> data_y,ArrayList<Integer> data_x) {
+        this.data_y = data_y;
+        this.data_x = data_x;
+    }
 }

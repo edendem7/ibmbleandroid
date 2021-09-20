@@ -1,6 +1,5 @@
 package com.navitend.ble1;
 
-import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
@@ -9,54 +8,56 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
-import android.bluetooth.le.*;
+import android.bluetooth.le.ScanCallback;
+import android.bluetooth.le.ScanRecord;
+import android.bluetooth.le.ScanResult;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.Handler;
 import android.os.Looper;
+import android.os.Message;
 import android.os.ParcelUuid;
-import android.app.DialogFragment;
-
+import android.util.Log;
+import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.webkit.JavascriptInterface;
+import android.webkit.WebChromeClient;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
+import android.widget.CheckBox;
+import android.widget.ImageView;
+import android.widget.NumberPicker;
+import android.widget.TextView;
+import android.widget.Toast;
+import java.time.*;
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
-import com.google.firebase.auth.AuthResult;
+
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
-import android.util.Log;
-import android.view.View;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
-import android.webkit.JavascriptInterface;
-import android.webkit.WebView;
-import android.webkit.WebSettings;
-import android.webkit.WebChromeClient;
-import android.webkit.WebViewClient;
-import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.ImageView;
-import android.widget.NumberPicker;
-import android.widget.TextView;
-import android.widget.Toast;
-
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.Queue;
 import java.util.List;
+import java.util.Queue;
 import java.util.UUID;
-
-import pub.devrel.easypermissions.AfterPermissionGranted;
-import pub.devrel.easypermissions.EasyPermissions;
 
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
@@ -86,6 +87,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Byte msg_value = 0x13;//MSB is record mode and LSB is vibration strength
     private ArrayList<Float> data_y = new ArrayList<Float>();
     private ArrayList<Integer> data_x = new ArrayList<Integer>();
+    private User user;
     private boolean read1 = false, read2 = false, read3 = false, read4 = false, read5 = false, read6 = false, read7 = false, read8 = false;
 
     //-----------------------------------regarding preferences
@@ -125,28 +127,51 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         //get data from login activity
         Intent intent = getIntent();
         final String curr_email = intent.getStringExtra("email");
-//        current_user = LoginActivity.mAuth.getCurrentUser();
-//        DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference().child("Users");
-//        rootRef.addValueEventListener(new ValueEventListener() {
-//            @Override
-//            public void onDataChange(@NonNull DataSnapshot Snapshot) {
-//                for (DataSnapshot snapshot:Snapshot.getChildren()){
-//                    if(snapshot.getValue(User.class).email.equals(curr_email)){
-//                        User user = snapshot.getValue(User.class);
-//                        Toast t = Toast.makeText(MainActivity.this, "user isssss:" + user.name, Toast.LENGTH_LONG);
-//                        t.show();
-//                        Log.i(tag, "user issss:" + user.name);
-//                    }
-//                }
-//
-//            }
+        DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference().child("Users");
+        rootRef.addValueEventListener(new ValueEventListener() {
+            @RequiresApi(api = Build.VERSION_CODES.O)
+            @Override
+            public void onDataChange(@NonNull DataSnapshot Snapshot) {
+                for (DataSnapshot snapshot:Snapshot.getChildren()){
+                    if(snapshot.exists()){
+                        if(snapshot.getValue(User.class) != null && snapshot.getValue(User.class).email != null) {
+                            if(snapshot.getValue(User.class).email.equals(curr_email)){
+                                User user = snapshot.getValue(User.class);
+//                                ArrayList<Float> new_y = new ArrayList<Float>();
+//                                ArrayList<Integer> new_x = new ArrayList<Integer>();
+//                                new_y.add((float)1);
+//                                new_y.add((float)2);
+//                                new_y.add((float)3);
+//                                new_y.add((float)4);
+//                                new_x.add(7);
+//                                new_x.add(8);
+//                                new_x.add(9);
+//                                new_x.add(10);
+//                                SampleData samples1 = new SampleData(new_y,new_x);
+//                                LocalDateTime lt = LocalDateTime.now();
+//                                String time_string = lt.toString();
+//                                user.samples = new HashMap<String,SampleData>();
+//                                user.samples.put(time_string,samples1);
+//                                rootRef.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).setValue(user);
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        status_view.setText("Welcome back, " + user.name);
+                                    }
+                                });
+                            }
+                        }
+                    }
+                }
+            }
 
-//            @Override
-//            public void onCancelled(@NonNull DatabaseError error) {
-//
-//            }
-//        });
-        //uidRef.addListenerForSingleValueEvent(valueEventListener);
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+        //User new_user = new User(user.name,user.email);
+
 
         //responsible for updating the webview (status view)
         mHandler = new Handler(Looper.getMainLooper()) {
@@ -621,6 +646,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 BluetoothGattService ourBLEService = gatt.getService(serviceWeWant);
                 Log.i(tag, "data_y   :" + data_y.toString());
                 Log.i(tag, "data_x   :" + data_x.toString());
+
                 mHandler.sendEmptyMessage(DISCONNECTING);
                 gatt.disconnect();
 
